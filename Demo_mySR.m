@@ -1,0 +1,149 @@
+% =========================================================================
+% Simple demo codes for image super-resolution via sparse representation
+%
+% Reference
+%   J. Yang et al. Image super-resolution as sparse representation of raw
+%   image patches. CVPR 2008.
+%   J. Yang et al. Image super-resolution via sparse representation. IEEE 
+%   Transactions on Image Processing, Vol 19, Issue 11, pp2861-2873, 2010
+%
+% Jianchao Yang
+% ECE Department, University of Illinois at Urbana-Champaign
+% For any questions, send email to jyang29@uiuc.edu
+% =========================================================================
+function res = Demo_mySR(TD, imname)
+
+% read test image
+res = zeros(1,4);
+newpath = 'newfig';
+%if TD < 5
+mysize = 2^(TD-1)*256;
+%else
+%    mysize = 1024;
+ %   TD = 1010;
+%end
+
+% imname = 'new2102.tiff';
+im = imread(fullfile('testTD',imname));
+im_l = imresize(im,1/2);
+%lrname = ['LR' imname];
+% im_l = imresize(im_l,1/3);%缩小测试！
+% set parameters
+lambda = 0.2;                   % sparsity regularization
+overlap = 4;                    % the more overlap the better (patch size 5x5)
+up_scale = 2;                   % scaling factor, depending on the trained dictionary
+maxIter = 20;                   % if 0, do not use backprojection
+
+% load dictionary
+if TD == 1
+    load('Dictionary/newD_256_0.15_5.mat');%256
+end
+if TD == 2
+    load('Dictionary/D_512_0.15_5_2.mat');%512
+end   
+if TD == 3
+    load('Dictionary/D_1024_0.15_5_2.mat');%1024
+end 
+if TD == 4
+    load('Dictionary/newD_1024_0.15_5.mat');%2014
+end 
+if TD == 5
+    load('Dictionary/D_1024_0.15_5_s2.mat');%2014
+end 
+% change color space, work on illuminance only
+simage = size(im);
+if length(simage) == 3
+
+    im_l_ycbcr = rgb2ycbcr(im_l);
+    im_l_y = im_l_ycbcr(:, :, 1);
+    im_l_cb = im_l_ycbcr(:, :, 2);
+    im_l_cr = im_l_ycbcr(:, :, 3);
+else
+    im_l_y = im_l;
+end
+
+% image super-resolution based on sparse representation
+[im_h_y] = ScSR(im_l_y, up_scale, Dh, Dl, lambda, overlap);
+im_h_unB = im_h_y;
+[im_h_y] = backprojection(im_h_y, im_l_y, maxIter);
+
+[im_Gh_y] = MyBpC(im_h_y,im_l_y);
+% image resuper-resolution base on NL models
+% im_h_y = presetimage(im_h_y);
+% upscale the chrominance simply by "bicubic" \
+
+[nrow, ncol] = size(im_h_y);
+%HR 其他两个分量
+if length(simage) == 3
+    im_h_cb = imresize(im_l_cb, [nrow, ncol], 'bicubic');
+    im_h_cr = imresize(im_l_cr, [nrow, ncol], 'bicubic');
+    % G ScSR HR
+    im_h_ycbcr = zeros([nrow, ncol, 3]);
+    im_h_ycbcr(:, :, 1) = im_h_y;
+    im_h_ycbcr(:, :, 2) = im_h_cb;
+    im_h_ycbcr(:, :, 3) = im_h_cr;
+    im_h = ycbcr2rgb(uint8(im_h_ycbcr));
+    % JMD、ScSR HR
+    im_h_unBc = zeros([nrow,ncol,3]);
+    im_h_unBc(:,:,1) = im_h_unB;
+    im_h_unBc(:,:,2) = im_h_cb;
+    im_h_unBc(:,:,3) = im_h_cr;
+    im_h_unB = ycbcr2rgb(uint8(im_h_unBc));
+    % GJDM HR
+    im_gh = zeros([nrow,ncol,3]);
+    im_gh(:,:,1) = im_Gh_y;
+    im_gh(:,:,2) = im_h_cb;
+    im_gh(:,:,3) = im_h_cr;
+    im_gh = ycbcr2rgb(uint8(im_gh));
+else
+    im_h = im_h_y;
+    im_gh = im_Gh_y;
+end
+im = imresize(im,[nrow, ncol]);
+% bicubic interpolation for reference
+
+%处理Bic
+im_b = imresize(im_l, [nrow, ncol], 'bicubic');
+bb_rmse = compute_rmse(im, im_b);
+bb_psnr = 20*log10(255/bb_rmse);
+im_b = uint8(im_b);
+bname = ['F_' num2str(up_scale) '_' num2str(mysize) 'B' imname];
+imwrite(im_b,fullfile(newpath,bname));
+res(1) = bb_psnr;
+
+%处理S
+resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'S' imname];
+%imwrite(im_h_unB,fullfile('Results',resname));
+ss_rmse = compute_rmse(im, im_h_unB);
+ss_psnr = 20*log10(255/ss_rmse);
+im_h_unB = uint8(im_h_unB);
+imwrite(im_h_unB,fullfile(newpath,resname));
+res(2) = ss_psnr;
+
+%处理GS
+resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'GS' imname];
+%imwrite(im_h_unB,fullfile('Results',resname));
+sp_rmse = compute_rmse(im, im_h);
+sp_psnr = 20*log10(255/sp_rmse);
+im_h = uint8(im_h);
+imwrite(im_h,fullfile(newpath,resname));
+res(3) = sp_psnr;
+
+%处理GJMD
+resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'GJ' imname];
+%imwrite(im_h_unB,fullfile('Results',resname));
+sg_rmse = compute_rmse(im, im_gh);
+sg_psnr = 20*log10(255/sg_rmse);
+im_gh = uint8(im_gh);
+imwrite(im_gh,fullfile(newpath,resname));
+res(4) = sg_psnr;
+
+% read ground truth image
+% im = imread('Data/Testing/gnd.bmp');
+
+% compute PSNR for the illuminance channel
+myres = 'Done';
+fprintf(myres);
+fprintf('\n');
+fprintf('PSNR for Bicubic Interpolation: %f dB\n', bb_psnr);
+fprintf('PSNR for Sparse Representation Recovery: %f dB\n', sp_psnr);
