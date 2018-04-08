@@ -1,0 +1,23 @@
+TD = 5;
+res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
+for ii = 4:length(img_dir),
+    imname = img_dir(ii).name;
+    res1 = zeros(1,4);
+    res1 = Demo_mySR(img_path,TD,imname);
+    res(ii,:) = res1;
+%     im = imread(fullfile(img_path, img_dir(ii).name));
+%     nper_img(ii) = prod(size(im));%计�??��???????�?��
+end
+dict_path = ['newres/td_s3_res_1024_' num2str(TD) '.mat' ];
+save(dict_path,'res');
+
+res = zeros(img_num,1);
+for ii = 4:length(img_dir),
+    imname = img_dir(ii).name;
+    res1 = Jmd(img_path,imname);
+    res(ii,1) = res1;
+%     im = imread(fullfile(img_path, img_dir(ii).name));
+%     nper_img(ii) = prod(size(im));%计�??��???????�?��
+end
+dict_path = ['newres/td_s2_res_jmd_1024' '.mat' ];
+save(dict_path,'res');

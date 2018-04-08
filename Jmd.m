@@ -1,12 +1,12 @@
-function res = Jmd(imname)
+function res = Jmd(path,imname)
 % read test image
-newpath = 'newfig';
+newpath = 'newres';
 mysize = 1024;
 % imname = 'new2102.tiff';
-im = imread(fullfile('testTD',imname));
+im = imread(fullfile(path,imname));
 im_l = imresize(im,1/2);
 %lrname = ['LR' imname];
-% im_l = imresize(im_l,1/3);%ËõÐ¡²âÊÔ£¡
+% im_l = imresize(im_l,1/3);%ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½Ô£ï¿½
 % set parameters
 lambda = 0.2;                   % sparsity regularization
 overlap = 4;                    % the more overlap the better (patch size 5x5)
@@ -14,7 +14,7 @@ up_scale = 2;                   % scaling factor, depending on the trained dicti
 maxIter = 20;                   % if 0, do not use backprojection
 
 % load dictionary
-load('Dictionary/D_1024_0.15_5_2.mat');%1024
+load('Dictionary/new1D_1024_0.15_5_s2.mat');%1024
 
 
 % change color space, work on illuminance only
@@ -36,7 +36,7 @@ end
 % upscale the chrominance simply by "bicubic" \
 
 [nrow, ncol] = size(im_h_y);
-%HR ÆäËûÁ½¸ö·ÖÁ¿
+%HR ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 if length(simage) == 3
     im_h_cb = imresize(im_l_cb, [nrow, ncol], 'bicubic');
     im_h_cr = imresize(im_l_cr, [nrow, ncol], 'bicubic');
@@ -53,7 +53,7 @@ im = imresize(im,[nrow, ncol]);
 % bicubic interpolation for reference
 
 
-%´¦ÀíS
+%ï¿½ï¿½ï¿½ï¿½S
 resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'JMd' imname];
 %imwrite(im_h_unB,fullfile('Results',resname));
 ss_rmse = compute_rmse(im, im_h);

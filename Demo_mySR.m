@@ -1,33 +1,22 @@
-% =========================================================================
-% Simple demo codes for image super-resolution via sparse representation
-%
-% Reference
-%   J. Yang et al. Image super-resolution as sparse representation of raw
-%   image patches. CVPR 2008.
-%   J. Yang et al. Image super-resolution via sparse representation. IEEE 
-%   Transactions on Image Processing, Vol 19, Issue 11, pp2861-2873, 2010
-%
-% Jianchao Yang
-% ECE Department, University of Illinois at Urbana-Champaign
-% For any questions, send email to jyang29@uiuc.edu
-% =========================================================================
-function res = Demo_mySR(TD, imname)
+
+function [res,time] = Demo_mySR(time,path,TD, imname)
 
 % read test image
 res = zeros(1,4);
-newpath = 'newfig';
+time=zeros(1,3);
+newpath = 'newres';%¥Ê¥¢Œª÷√
 %if TD < 5
-mysize = 2^(TD-1)*256;
+mysize = 2.^(TD-1)*256;
 %else
 %    mysize = 1024;
  %   TD = 1010;
 %end
 
 % imname = 'new2102.tiff';
-im = imread(fullfile('testTD',imname));
+im = imread(fullfile(path,imname));
 im_l = imresize(im,1/2);
 %lrname = ['LR' imname];
-% im_l = imresize(im_l,1/3);%Àı–°≤‚ ‘£°
+% im_l = imresize(im_l,1/3);%ÔøΩÔøΩ–°ÔøΩÔøΩÔøΩ‘£ÔøΩ
 % set parameters
 lambda = 0.2;                   % sparsity regularization
 overlap = 4;                    % the more overlap the better (patch size 5x5)
@@ -42,13 +31,16 @@ if TD == 2
     load('Dictionary/D_512_0.15_5_2.mat');%512
 end   
 if TD == 3
-    load('Dictionary/D_1024_0.15_5_2.mat');%1024
+    load('Dictionary/newD_1024_0.15_5.mat');%1024
 end 
 if TD == 4
-    load('Dictionary/newD_1024_0.15_5.mat');%2014
+    load('Dictionary/newD_2048_0.15_5.mat');%2048
 end 
+% up_sacle =3;
 if TD == 5
-    load('Dictionary/D_1024_0.15_5_s2.mat');%2014
+    load('Dictionary/new1D_1024_0.15_5_s3.mat');%2048
+    im_l = imresize(im,1/3);
+    up_scale = 3;
 end 
 % change color space, work on illuminance only
 simage = size(im);
@@ -63,17 +55,27 @@ else
 end
 
 % image super-resolution based on sparse representation
+%ÁªüËÆ°Êó∂Èó¥
+t1=clock;
+
 [im_h_y] = ScSR(im_l_y, up_scale, Dh, Dl, lambda, overlap);
+tm=clock;
 im_h_unB = im_h_y;
 [im_h_y] = backprojection(im_h_y, im_l_y, maxIter);
-
+t2=clock;
+time(2) = etime(t2,t1);
+fprintf('ScSR time: %f s\n', time(2));
 [im_Gh_y] = MyBpC(im_h_y,im_l_y);
+t3=clock;
+time(3)=etime(tm,t1)+etime(t3,t2);
+fprintf('DJDM time: %f s\n', time(3));
+
 % image resuper-resolution base on NL models
 % im_h_y = presetimage(im_h_y);
 % upscale the chrominance simply by "bicubic" \
 
 [nrow, ncol] = size(im_h_y);
-%HR ∆‰À˚¡Ω∏ˆ∑÷¡ø
+%HR ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
 if length(simage) == 3
     im_h_cb = imresize(im_l_cb, [nrow, ncol], 'bicubic');
     im_h_cr = imresize(im_l_cr, [nrow, ncol], 'bicubic');
@@ -83,7 +85,7 @@ if length(simage) == 3
     im_h_ycbcr(:, :, 2) = im_h_cb;
     im_h_ycbcr(:, :, 3) = im_h_cr;
     im_h = ycbcr2rgb(uint8(im_h_ycbcr));
-    % JMD°¢ScSR HR
+    % JMDÔøΩÔøΩScSR HR
     im_h_unBc = zeros([nrow,ncol,3]);
     im_h_unBc(:,:,1) = im_h_unB;
     im_h_unBc(:,:,2) = im_h_cb;
@@ -102,17 +104,22 @@ end
 im = imresize(im,[nrow, ncol]);
 % bicubic interpolation for reference
 
-%¥¶¿ÌBic
+%ÔøΩÔøΩÔøΩÔøΩBic
+tb1=clock;
 im_b = imresize(im_l, [nrow, ncol], 'bicubic');
 bb_rmse = compute_rmse(im, im_b);
+tb2=clock;
+time(1)=etime(tb2,tb1);
+fprintf('BC time: %f s\n', time(1));
+
 bb_psnr = 20*log10(255/bb_rmse);
 im_b = uint8(im_b);
-bname = ['F_' num2str(up_scale) '_' num2str(mysize) 'B' imname];
+bname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'B' imname];
 imwrite(im_b,fullfile(newpath,bname));
 res(1) = bb_psnr;
 
-%¥¶¿ÌS
-resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'S' imname];
+% %ÔøΩÔøΩÔøΩÔøΩS
+resname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'S' imname];
 %imwrite(im_h_unB,fullfile('Results',resname));
 ss_rmse = compute_rmse(im, im_h_unB);
 ss_psnr = 20*log10(255/ss_rmse);
@@ -120,8 +127,8 @@ im_h_unB = uint8(im_h_unB);
 imwrite(im_h_unB,fullfile(newpath,resname));
 res(2) = ss_psnr;
 
-%¥¶¿ÌGS
-resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'GS' imname];
+% ÔøΩÔøΩÔøΩÔøΩGS
+resname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'GS' imname];
 %imwrite(im_h_unB,fullfile('Results',resname));
 sp_rmse = compute_rmse(im, im_h);
 sp_psnr = 20*log10(255/sp_rmse);
@@ -129,8 +136,8 @@ im_h = uint8(im_h);
 imwrite(im_h,fullfile(newpath,resname));
 res(3) = sp_psnr;
 
-%¥¶¿ÌGJMD
-resname = ['F_' num2str(up_scale) '_' num2str(mysize) 'GJ' imname];
+%ÔøΩÔøΩÔøΩÔøΩGJMD
+resname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'GJ' imname];
 %imwrite(im_h_unB,fullfile('Results',resname));
 sg_rmse = compute_rmse(im, im_gh);
 sg_psnr = 20*log10(255/sg_rmse);
@@ -146,4 +153,5 @@ myres = 'Done';
 fprintf(myres);
 fprintf('\n');
 fprintf('PSNR for Bicubic Interpolation: %f dB\n', bb_psnr);
-fprintf('PSNR for Sparse Representation Recovery: %f dB\n', sp_psnr);
+fprintf('PSNR for GCSR Recovery: %f dB\n', ss_psnr);
+fprintf('PSNR for GJDM Recovery: %f dB\n', sg_psnr);

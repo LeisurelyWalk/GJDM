@@ -1,78 +1,68 @@
-img_path = 'testTD';
-type = '*.tiff';
-img_dir = dir(fullfile(img_path, type));%?·å???»¶??bmp
-
-img_num = length(img_dir);%?¾ç?ä¸??
+function DiS_SR(img_path,type)
+%img_path = 'testTD';
+%img_path = 'newtest';
+%type = '*.jpg';
+%type = '*.tiff';
+img_dir = dir(fullfile(img_path, type));%?ï¿½ï¿½???ï¿½ï¿½??bmp
+%dict_path = ['newres/img_dir' '.txt' ];
+%save(dict_path,img_dir);
+img_num = length(img_dir);%?ï¿½ï¿½?ï¿½??
 % nper_img = zeros(1, img_num);
-TD = 1;%1£º256£¬2£º512£¬3£º1024£¬ 4£º2048
+TD = 1;%1ï¿½ï¿½256ï¿½ï¿½2ï¿½ï¿½512ï¿½ï¿½3ï¿½ï¿½1024ï¿½ï¿½ 4ï¿½ï¿½2048
 res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
-for ii = 1:length(img_dir),
-    imname = img_dir(ii).name;
-    res1 = zeros(1,4);
-    res1 = Demo_mySR(TD,imname);
-    res(ii,:) = res1(:);
-%     im = imread(fullfile(img_path, img_dir(ii).name));
-%     nper_img(ii) = prod(size(im));%è®¡ç??°ç???????ä¹?§¯
-end
-dict_path = ['newfig/res_' num2str(TD) '.mat' ];
-save(dict_path,'res');
+times=zeros(1,3);
+% for ii = 7:length(img_dir),
+%     imname = img_dir(ii).name;
+%     res1= zeros(1,4);
+%     [res1 ,times]= Demo_mySR(times,img_path,TD,imname);
+%     res(ii,:) = res1(:);
+% %     im = imread(fullfile(img_path, img_dir(ii).name));
+% %     nper_img(ii) = prod(size(im));%è®¡ï¿½??ï¿½ï¿½???????ï¿½?ï¿½ï¿½
+% end
+% dict_path = ['newres/dz_s2_res_256_' num2str(TD) '.mat' ];
+% save(dict_path,'res');
+% TD = 2;
+% res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
+% for ii = 7:length(img_dir),
+%     imname = img_dir(ii).name;
+%     res1 = zeros(1,4);
+%     [res1 ,times]= Demo_mySR(times,img_path,TD,imname);
+%     res(ii,:) = res1;
+% %     im = imread(fullfile(img_path, img_dir(ii).name));
+% %     nper_img(ii) = prod(size(im));%è®¡ï¿½??ï¿½ï¿½???????ï¿½?ï¿½ï¿½
+% end
+% dict_path = ['newres/dz_s2_res_512_' num2str(TD) '.mat' ];
+% save(dict_path,'res');
 TD = 2;
 res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
+times= zeros(img_num,3);%psnr Bic,Jmd/ScSR,GJMD
 for ii = 1:length(img_dir),
+    
     imname = img_dir(ii).name;
+    if imname(1)=='.'
+        continue
+    end
     res1 = zeros(1,4);
-    res1 = Demo_mySR(TD,imname);
+    [res1 ,time1]= Demo_mySR(times,img_path,TD,imname);
     res(ii,:) = res1;
+    times(ii,:)=time1;
 %     im = imread(fullfile(img_path, img_dir(ii).name));
-%     nper_img(ii) = prod(size(im));%è®¡ç??°ç???????ä¹?§¯
+%     nper_img(ii) = prod(size(im));%è®¡ï¿½??ï¿½ï¿½???????ï¿½?ï¿½ï¿½
 end
-dict_path = ['newfig/res_' num2str(TD) '.mat' ];
+dict_path = ['newres/dz_s2_res_1024_' num2str(TD) '.mat' ];
 save(dict_path,'res');
-TD = 3;
-res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
-for ii = 1:length(img_dir),
-    imname = img_dir(ii).name;
-    res1 = zeros(1,4);
-    res1 = Demo_mySR(TD,imname);
-    res(ii,:) = res1;
-%     im = imread(fullfile(img_path, img_dir(ii).name));
-%     nper_img(ii) = prod(size(im));%è®¡ç??°ç???????ä¹?§¯
-end
-dict_path = ['newfig/res_' num2str(TD) '.mat' ];
-save(dict_path,'res');
-TD = 4;
-res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
-for ii = 1:length(img_dir),
-    imname = img_dir(ii).name;
-    res1 = zeros(1,4);
-    res1 = Demo_mySR(TD,imname);
-    res(ii,:) = res1;
-%     im = imread(fullfile(img_path, img_dir(ii).name));
-%     nper_img(ii) = prod(size(im));%è®¡ç??°ç???????ä¹?§¯
-end
-dict_path = ['newfig/res_' num2str(TD) '.mat' ];
-save(dict_path,'res');
+dict_path = ['newres/timesSc,SJ,BC,1024_' num2str(TD) type '.mat' ];
+save(dict_path,'times');
+% TD = 4;
+% res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
+% for ii = 7:length(img_dir),
+%     imname = img_dir(ii).name;
+%     res1 = zeros(1,4);
+%     [res1 ,times]= Demo_mySR(times,img_path,TD,imname);
+%     res(ii,:) = res1;
+% %     im = imread(fullfile(img_path, img_dir(ii).name));
+% %     nper_img(ii) = prod(size(im));%è®¡ï¿½??ï¿½ï¿½???????ï¿½?ï¿½ï¿½
+% end
+% dict_path = ['newres/dz_s2_res_2048_' num2str(TD) '.mat' ];
+% save(dict_path,'res');
 
-TD = 5;
-res = zeros(img_num,4);%psnr Bic,Jmd/ScSR,GSCSR,GJMD
-for ii = 1:length(img_dir),
-    imname = img_dir(ii).name;
-    res1 = zeros(1,4);
-    res1 = Demo_mySR(TD,imname);
-    res(ii,:) = res1;
-%     im = imread(fullfile(img_path, img_dir(ii).name));
-%     nper_img(ii) = prod(size(im));%è®¡ç??°ç???????ä¹?§¯
-end
-dict_path = ['newfig/TDres_' num2str(TD) '.mat' ];
-save(dict_path,'res');
-
-res = zeros(img_num,1);
-for ii = 1:length(img_dir),
-    imname = img_dir(ii).name;
-    res1 = Jmd(imname);
-    res(ii,1) = res1;
-%     im = imread(fullfile(img_path, img_dir(ii).name));
-%     nper_img(ii) = prod(size(im));%è®¡ç??°ç???????ä¹?§¯
-end
-dict_path = ['newfig/res_jmd' '.mat' ];
-save(dict_path,'res');
