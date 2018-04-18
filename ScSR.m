@@ -53,11 +53,11 @@ for ii = 1:length(gridx),
         b = -Dl'*y;
 %         tic;
         % sparse recovery
-        w = L1QP_FeatureSign_yang(lambda, A, b);
+%         w = L1QP_FeatureSign_yang(lambda, A, b);
 %         fprintf('Done:  time = %0.3f secs\n',toc);
 %         tic;
-%         x0 = zeros(n1,1);
-%         w = fastiter(Dl,y,2*lambda,x0);
+        x0 = zeros(n1,1);
+        w = fastiter(Dl,y,2*lambda,x0);
 %         fprintf('Done:  time = %0.3f secs\n',toc);
 %         generate the high resolution patch and scale the contrast
         hPatch = Dh*w;

@@ -38,7 +38,7 @@ if TD == 4
 end 
 % up_sacle =3;
 if TD == 5
-    load('Dictionary/new1D_1024_0.15_5_s3.mat');%2048
+    load('Dictionary/new1D_1024_0.15_5_s3.mat');
     im_l = imresize(im,1/3);
     up_scale = 3;
 end 
@@ -115,7 +115,7 @@ fprintf('BC time: %f s\n', time(1));
 bb_psnr = 20*log10(255/bb_rmse);
 im_b = uint8(im_b);
 bname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'B' imname];
-imwrite(im_b,fullfile(newpath,bname));
+% imwrite(im_b,fullfile(newpath,bname));
 res(1) = bb_psnr;
 
 % %����S
@@ -124,7 +124,7 @@ resname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'S' imname];
 ss_rmse = compute_rmse(im, im_h_unB);
 ss_psnr = 20*log10(255/ss_rmse);
 im_h_unB = uint8(im_h_unB);
-imwrite(im_h_unB,fullfile(newpath,resname));
+% imwrite(im_h_unB,fullfile(newpath,resname));
 res(2) = ss_psnr;
 
 % ����GS
@@ -133,7 +133,7 @@ resname = ['Fdz_' num2str(up_scale) '_' num2str(mysize) 'GS' imname];
 sp_rmse = compute_rmse(im, im_h);
 sp_psnr = 20*log10(255/sp_rmse);
 im_h = uint8(im_h);
-imwrite(im_h,fullfile(newpath,resname));
+% imwrite(im_h,fullfile(newpath,resname));
 res(3) = sp_psnr;
 
 %����GJMD

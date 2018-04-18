@@ -21,3 +21,4 @@ x = sol;
 opts.accelerate = false;
 opts.adaptive = false;
 [sol1, outs_fbs] = fasta_sparseLeastSquares(A,A',b,mu,x0, opts);
+plotresidual;

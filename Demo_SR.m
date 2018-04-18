@@ -1,17 +1,3 @@
-% =========================================================================
-% Simple demo codes for image super-resolution via sparse representation
-%
-% Reference
-%   J. Yang et al. Image super-resolution as sparse representation of raw
-%   image patches. CVPR 2008.
-%   J. Yang et al. Image super-resolution via sparse representation. IEEE 
-%   Transactions on Image Processing, Vol 19, Issue 11, pp2861-2873, 2010
-%
-% Jianchao Yang
-% ECE Department, University of Illinois at Urbana-Champaign
-% For any questions, send email to jyang29@uiuc.edu
-% =========================================================================
-
 clear all; clc;
 
 % read test image
